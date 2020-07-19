@@ -1,0 +1,51 @@
+---
+title: "Joining Data"
+output: html_document
+---
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(readr)
+library(curl)
+```
+
+
+## Loading Dataset #1
+```{r}
+data_1 = read_csv('https://data.cityofnewyork.us/resource/erm2-nwe9.csv?complaint_type=Illegal+Animal+Kept+as+Pet&borough=QUEENS')
+```
+Above, I loaded NYC 311 data related to "Illegal animal kept as pet" from the Queens borough.
+
+## Loading Dataset #2 
+```{r}
+data_2 = read_csv('https://data.cityofnewyork.us/resource/erm2-nwe9.csv?agency_name=Department+of+Sanitation&borough=QUEENS')
+```
+Above, I loaded the NYC 311 data belonging to the Sanitation Department. 
+
+## Group by addresses and count the number of complaints
+```{r}
+data_1_agg = data_1 %>% count(incident_address)
+data_2_agg = data_2 %>% count(incident_address)
+data_1_agg
+data_2_agg
+```
+Here, for each address I counted the number of times it occurred in the datasets. Since each row in the dataset is a complaint, this count is the number of complaints per address.
+
+##  Join the two dataframes
+
+### Renaming the 'n' columns 
+```{r}
+data_1_agg = rename(data_1_agg, n_animal_compalaints = n)
+data_2_agg = rename(data_2_agg, n_sanitation_complaints = n)
+data_1_agg
+data_2_agg
+```
+In order to join the datasets, I renamed the two variables that aren't being joined on, for easier reference. The incident address variables were left the same because that variable is the one that will be joined on in the following step.
+
+### Joining the datasets
+```{r}
+data_1_agg %>% inner_join(data_2_agg, by = "incident_address")
+```
+I performed an inner join by incident address between data_1_agg and data_2_agg 
+because I wanted to create an object that contains only those addresses that have complaints in both. 
